@@ -5,12 +5,17 @@
 
 set -euo pipefail
 
+log() { echo "[pre-flight] $*" >&2; }
+
 input=$(cat)
 transcript_path=$(echo "$input" | jq -r '.transcript_path // empty')
 
 if [ -z "$transcript_path" ] || [ ! -f "$transcript_path" ]; then
+  log "no transcript found, skipping"
   exit 0
 fi
+
+log "extracting plan from transcript..."
 
 # Extract the content of the most recent Write tool call from the transcript.
 # Plans are written to a file just before ExitPlanMode is called.
@@ -49,14 +54,17 @@ PYEOF
 )
 
 if [ -z "$plan_content" ]; then
+  log "no plan content found in transcript, skipping"
   exit 0
 fi
+
+log "plan extracted (${#plan_content} chars), sending to codex..."
 
 # Run codex non-interactively; uses ~/.codex/config.toml defaults (model, effort)
 review_file=$(mktemp /tmp/codex-plan-review-XXXXXX.txt)
 trap 'rm -f "$review_file"' EXIT
 
-codex exec \
+if ! codex exec \
   --full-auto \
   --ephemeral \
   --skip-git-repo-check \
@@ -72,13 +80,19 @@ Flag any of the following if present:
 If the plan looks solid, say so briefly.
 
 Plan:
-$plan_content" 2>/dev/null
+$plan_content" 2>&1 | while IFS= read -r line; do log "codex: $line"; done; then
+  log "codex exec failed"
+  exit 0
+fi
 
 review=$(cat "$review_file" 2>/dev/null || echo "")
 
 if [ -z "$review" ]; then
+  log "codex returned empty review, skipping"
   exit 0
 fi
+
+log "review received (${#review} chars), injecting system message"
 
 # Pass-through: inject review as system message visible to Claude and user
 jq -n --arg review "$review" \
