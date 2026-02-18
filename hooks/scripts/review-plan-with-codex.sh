@@ -96,6 +96,12 @@ fi
 
 log "review received (${#review} chars), injecting system message"
 
-# Pass-through: inject review as system message visible to Claude and user
+# Inject review via both systemMessage (shown to user) and additionalContext (added to Claude's context)
 jq -n --arg review "$review" \
-  '{"systemMessage": ("## Codex Plan Review\n\n" + $review)}'
+  '{
+    "systemMessage": ("## Codex Plan Review\n\n" + $review),
+    "hookSpecificOutput": {
+      "hookEventName": "PreToolUse",
+      "additionalContext": ("## Codex Plan Review\n\n" + $review)
+    }
+  }'
