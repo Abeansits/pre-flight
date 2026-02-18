@@ -23,7 +23,7 @@ Non-blocking by design: the review is informational. You stay in control.
 ## Install
 
 ```bash
-claude plugin install pre-flight
+claude plugin install github:Abeansits/pre-flight
 ```
 
 Then restart Claude Code — hooks are loaded at session start.
