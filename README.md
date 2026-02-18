@@ -20,39 +20,13 @@ Non-blocking by design: the review is informational. You stay in control.
 - [Codex CLI](https://github.com/openai/codex) with `~/.codex/config.toml` configured
 - `python3` and `jq` in your PATH
 
-## Setup
-
-### 1. Copy the hook script
+## Install
 
 ```bash
-mkdir -p ~/.claude/hooks
-cp .claude/hooks/review-plan-with-codex.sh ~/.claude/hooks/
+claude plugin install pre-flight
 ```
 
-### 2. Add the hook to `~/.claude/settings.json`
-
-```json
-{
-  "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "ExitPlanMode",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash ~/.claude/hooks/review-plan-with-codex.sh",
-            "timeout": 120
-          }
-        ]
-      }
-    ]
-  }
-}
-```
-
-### 3. Restart Claude Code
-
-Hooks are loaded at session start — exit and relaunch for the hook to take effect.
+Then restart Claude Code — hooks are loaded at session start.
 
 ## Configuration
 
@@ -63,16 +37,12 @@ model = "gpt-5.3-codex-spark"
 model_reasoning_effort = "xhigh"
 ```
 
-Adjust `timeout` in `settings.json` if reviews are timing out (default: 120s).
+The default review timeout is 120 seconds. If reviews are timing out, you can adjust this in the plugin's `hooks/hooks.json`.
 
 ## Debugging
 
 ```bash
-# Test the script manually
-echo '{"transcript_path": "/path/to/transcript.jsonl", "cwd": "/your/project"}' | \
-  bash ~/.claude/hooks/review-plan-with-codex.sh
-
-# Or run Claude Code in debug mode to see hook execution logs
+# Run Claude Code in debug mode to see hook execution logs
 claude --debug
 ```
 
