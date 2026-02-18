@@ -1,0 +1,11 @@
+{
+  "name": "pre-flight",
+  "description": "Auto-reviews Claude Code implementation plans with Codex before approval",
+  "version": "1.0.0",
+  "author": {
+    "name": "Abeansits"
+  },
+  "repository": "https://github.com/abeansits/pre-flight",
+  "license": "MIT",
+  "keywords": ["plan-review", "codex", "pre-flight", "hooks"]
+}

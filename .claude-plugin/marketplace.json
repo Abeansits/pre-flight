@@ -1,0 +1,17 @@
+{
+  "name": "pre-flight",
+  "owner": {
+    "name": "Abeansits"
+  },
+  "metadata": {
+    "description": "Auto-reviews implementation plans with Codex before they reach you for approval",
+    "version": "1.0.0"
+  },
+  "plugins": [{
+    "name": "pre-flight",
+    "source": "./",
+    "description": "Intercepts ExitPlanMode, passes your plan to Codex for review, and injects findings as a system message. Non-blocking by design.",
+    "category": "code-quality",
+    "tags": ["plan-review", "codex", "hooks", "code-quality"]
+  }]
+}
