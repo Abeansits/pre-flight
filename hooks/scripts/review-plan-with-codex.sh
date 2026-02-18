@@ -66,7 +66,7 @@ trap 'rm -f "$review_file"' EXIT
 
 if ! codex exec \
   --model "gpt-5.3-codex" \
-  --reasoning-effort "high" \
+  -c 'model_reasoning_effort="high"' \
   --full-auto \
   --ephemeral \
   --skip-git-repo-check \
