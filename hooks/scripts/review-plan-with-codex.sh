@@ -30,13 +30,19 @@ with open(transcript_path, "r", encoding="utf-8") as f:
         except json.JSONDecodeError:
             continue
 
-        # Handle both direct tool_use entries and nested message entries
-        if obj.get("type") == "tool_use" and obj.get("name") == "Write":
+        # Search for Write tool_use blocks in all known transcript formats
+        content_blocks = []
+        if obj.get("type") in ("message", "assistant"):
+            # "assistant" type nests content in obj.message.content
+            # "message" type nests content directly in obj.content
+            msg = obj.get("message", obj)
+            content_blocks = msg.get("content", [])
+        elif obj.get("type") == "tool_use" and obj.get("name") == "Write":
             last_write_content = obj.get("input", {}).get("content", "")
-        elif obj.get("type") == "message":
-            for block in obj.get("content", []):
-                if isinstance(block, dict) and block.get("type") == "tool_use" and block.get("name") == "Write":
-                    last_write_content = block.get("input", {}).get("content", "")
+
+        for block in content_blocks:
+            if isinstance(block, dict) and block.get("type") == "tool_use" and block.get("name") == "Write":
+                last_write_content = block.get("input", {}).get("content", "")
 
 print(last_write_content or "")
 PYEOF
