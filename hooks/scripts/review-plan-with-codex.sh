@@ -65,6 +65,8 @@ review_file=$(mktemp /tmp/codex-plan-review-XXXXXX.txt)
 trap 'rm -f "$review_file"' EXIT
 
 if ! codex exec \
+  --model "gpt-5.3-codex" \
+  --reasoning-effort "high" \
   --full-auto \
   --ephemeral \
   --skip-git-repo-check \
