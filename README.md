@@ -1,6 +1,6 @@
-# pre-flight ✈️
+# pre-flight
 
-A [Claude Code](https://claude.ai/code) hook that automatically reviews your implementation plans with [Codex](https://openai.com/codex) before they reach you for approval.
+A [Claude Code](https://claude.ai/code) plugin that reviews your implementation plans with [Codex](https://openai.com/codex) before they reach you for approval.
 
 Every plan gets a second pair of eyes — before you say yes.
 
@@ -8,53 +8,38 @@ Every plan gets a second pair of eyes — before you say yes.
 
 1. You ask Claude Code to plan something
 2. Claude writes the plan and calls `ExitPlanMode`
-3. **pre-flight intercepts** — passes the plan to `codex exec` for review
-4. Codex flags risks, gaps, and wrong assumptions
-5. The review appears as a system message before you approve or revise
+3. **pre-flight intercepts** — sends the plan to Codex for review
+4. Codex returns prioritized feedback (P1–P3)
+5. Claude presents the review to you **before** the approval prompt
+6. You approve, revise, or reject with the review in hand
 
-Non-blocking by design: the review is informational. You stay in control.
+If the plan changes after feedback, it gets re-reviewed automatically.
 
 ## Requirements
 
 - [Claude Code](https://claude.ai/code) CLI
-- [Codex CLI](https://github.com/openai/codex) with `~/.codex/config.toml` configured
+- [Codex CLI](https://github.com/openai/codex) installed and authenticated
 - `python3` and `jq` in your PATH
 
 ## Install
 
 ```bash
-# Add the marketplace
 claude plugin marketplace add Abeansits/pre-flight
-
-# Install the plugin
 claude plugin install pre-flight@pre-flight
 ```
 
-Then restart Claude Code — hooks are loaded at session start.
+Restart Claude Code after installing — hooks load at session start.
 
-## Configuration
+## Updating
 
-The hook uses your `~/.codex/config.toml` defaults — no flags needed. Example config:
-
-```toml
-model = "gpt-5.3-codex-spark"
-model_reasoning_effort = "xhigh"
+```bash
+claude plugin marketplace update pre-flight
+claude plugin update pre-flight@pre-flight
 ```
-
-The default review timeout is 120 seconds. If reviews are timing out, you can adjust this in the plugin's `hooks/hooks.json`.
 
 ## Debugging
 
-```bash
-# Run Claude Code in debug mode to see hook execution logs
-claude --debug
-```
-
-If no plan is extracted from the transcript, the hook exits silently — it won't break anything.
-
-## How it extracts the plan
-
-The hook reads the Claude Code session transcript (JSONL) and finds the content of the most recent `Write` tool call — which is where Claude writes the plan file just before calling `ExitPlanMode`.
+Run Claude Code with `claude --debug` to see hook execution logs. If no plan is found in the transcript, the hook exits silently.
 
 ## License
 

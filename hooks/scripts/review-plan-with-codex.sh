@@ -97,15 +97,14 @@ if ! codex exec \
   --ephemeral \
   --skip-git-repo-check \
   -o "$review_file" \
-  "You are a senior engineer reviewing an implementation plan before it goes to the developer for approval. Be direct and concise — bullet points only.
+  "You are a senior engineer reviewing an implementation plan before it goes to the developer for approval. Be direct and concise — bullet points only, grouped by priority.
 
-Flag any of the following if present:
-- Missing steps or gaps in the approach
-- Wrong technical assumptions
-- Scope creep or over-engineering
-- Risks that aren't called out
+Prioritize findings:
+- P1 (must fix): correctness issues, wrong assumptions, missing critical steps, security risks
+- P2 (should fix): gaps in error handling, missing edge cases, unclear ownership of steps
+- P3 (nice to have): scope creep, over-engineering, minor improvements
 
-If the plan looks solid, say so briefly.
+Only include priority levels that have findings. If the plan looks solid, say so in one line.
 
 Plan:
 $plan_content" 2>&1 | while IFS= read -r line; do log "codex: $line"; done; then
@@ -132,6 +131,6 @@ jq -n --arg review "$review" \
     "hookSpecificOutput": {
       "hookEventName": "PreToolUse",
       "permissionDecision": "deny",
-      "permissionDecisionReason": ("## Codex Plan Review\n\nPresent this review to the user and address any concerns before finalizing the plan.\n\n" + $review)
+      "permissionDecisionReason": ("Codex Plan Review\n\nPresent this review to the user and address any concerns before finalizing the plan.\n\n" + $review)
     }
   }'
