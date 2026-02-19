@@ -27,6 +27,19 @@ fi
 # Derive a per-session marker file path from the transcript path
 marker_file="/tmp/pre-flight-$(echo "$transcript_path" | shasum -a 256 | cut -c1-16).marker"
 
+# Load config (model + reasoning effort) with defaults
+config_file="${HOME}/.config/pre-flight/config"
+model="gpt-5.3-codex"
+reasoning_effort="high"
+
+if [ -f "$config_file" ]; then
+  val=$(grep '^model=' "$config_file" | cut -d= -f2- | tr -d '[:space:]')
+  [ -n "$val" ] && model="$val"
+  val=$(grep '^reasoning_effort=' "$config_file" | cut -d= -f2- | tr -d '[:space:]')
+  [ -n "$val" ] && reasoning_effort="$val"
+  log "config loaded: model=$model reasoning_effort=$reasoning_effort"
+fi
+
 log "extracting plan from transcript..."
 
 # Extract the content of the most recent Write tool call from the transcript.
@@ -91,8 +104,8 @@ review_file=$(mktemp /tmp/codex-plan-review-XXXXXX.txt)
 trap 'rm -f "$review_file"' EXIT
 
 if ! codex exec \
-  --model "gpt-5.3-codex" \
-  -c 'model_reasoning_effort="high"' \
+  --model "$model" \
+  -c "model_reasoning_effort=\"$reasoning_effort\"" \
   --full-auto \
   --ephemeral \
   --skip-git-repo-check \
