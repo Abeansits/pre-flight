@@ -19,7 +19,7 @@ If the plan changes after feedback, it gets re-reviewed automatically.
 
 ## 🚀 Demo
 
-[![Pre-flight in action](https://img.youtube.com/vi/sMixXHXpbFc/maxresdefault.jpg)](https://youtu.be/sMixXHXpbFc)
+[![Pre-flight in action](https://img.youtube.com/vi/sMixXHXpbFc/hqdefault.jpg)](https://youtu.be/sMixXHXpbFc)
 
 ## Requirements
 
