@@ -1,6 +1,6 @@
-# pre-flight
+# pre-flight 📝 ✈️
 
-Love the speed and developer experience of using Claude Code but want to have the thorough review of Codex? Now you can have both!
+#### Love the speed and developer experience of using Claude Code but feel like you have to babysit it so it doens't over-engineer, or worse, miss some important detail? By injecting Codex into the planning process you can now have both!
 
 A [Claude Code](https://claude.ai/code) plugin that reviews your implementation plans with the [Codex](https://openai.com/codex) CLI before they reach you for approval. 
 
