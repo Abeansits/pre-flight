@@ -97,7 +97,6 @@ review_with_codex() {
     --model "$codex_model" \
     -c "model_reasoning_effort=\"$codex_reasoning_effort\"" \
     --full-auto \
-    --ephemeral \
     --skip-git-repo-check \
     -o "$output_file" \
     "$(build_review_prompt "$plan")" \
