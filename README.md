@@ -1,8 +1,8 @@
 # pre-flight 📝 ✈️
 
-#### Love the speed and developer experience of using Claude Code but feel like you have to babysit it so it doesn't over-engineer, or worse, miss some important detail? By injecting Codex into the planning process you can now have both!
+#### Love the speed and developer experience of using Claude Code but feel like you have to babysit it so it doesn't over-engineer, or worse, miss some important detail? By injecting a second opinion into the planning process you can now have both!
 
-A [Claude Code](https://claude.ai/code) plugin that reviews your implementation plans with the [Codex](https://github.com/openai/codex) CLI before they reach you for approval. 
+A [Claude Code](https://claude.ai/code) plugin that reviews your implementation plans with the [Codex](https://github.com/openai/codex) or [Gemini](https://github.com/google-gemini/gemini-cli) CLI before they reach you for approval.
 
 Your implementation plans, cleared for takeoff. ✈️
 
@@ -10,8 +10,8 @@ Your implementation plans, cleared for takeoff. ✈️
 
 1. You ask Claude Code to plan something
 2. Claude writes the plan and calls `ExitPlanMode`
-3. **NEW** **pre-flight intercepts** — sends the plan to Codex for review
-4. **NEW** Codex returns prioritized feedback (P1–P3)
+3. **NEW** **pre-flight intercepts** — sends the plan to your configured provider for review
+4. **NEW** The provider returns prioritized feedback (P1–P3)
 5. **NEW** Claude receives the feedback and decides whether to incorporate or ignore it
 6. You approve, revise, or reject with the review in hand
 
@@ -24,7 +24,9 @@ If the plan changes after feedback, it gets re-reviewed automatically.
 ## Requirements
 
 - [Claude Code](https://claude.ai/code) CLI
-- [Codex CLI](https://github.com/openai/codex) installed and authenticated
+- One of the following review providers:
+  - [Codex CLI](https://github.com/openai/codex) installed and authenticated (default)
+  - [Gemini CLI](https://github.com/google-gemini/gemini-cli) installed and authenticated (free tier: 1000 req/day, 1M token context)
 - `python3` and `jq` in your PATH
 
 ## Install
@@ -41,14 +43,20 @@ Restart Claude Code after installing - hooks load at session start
 Create `~/.config/pre-flight/config` to override defaults:
 
 ```
-model=gpt-5.3-codex
-reasoning_effort=high
+provider=codex
+codex_model=gpt-5.3-codex
+codex_reasoning_effort=high
+gemini_model=gemini-2.5-pro
 ```
 
-| Setting             | Default          | Description                    |
-|---------------------|------------------|--------------------------------|
-| `model`             | `gpt-5.3-codex`  | Codex model to use for reviews |
-| `reasoning_effort`  | `high`            | Reasoning effort (low/medium/high) |
+| Setting                  | Default          | Description                         |
+|--------------------------|------------------|-------------------------------------|
+| `provider`               | `codex`          | Review provider (`codex` or `gemini`) |
+| `codex_model`            | `gpt-5.3-codex`  | Codex model to use for reviews      |
+| `codex_reasoning_effort` | `high`           | Reasoning effort (low/medium/high)  |
+| `gemini_model`           | `gemini-2.5-pro` | Gemini model to use for reviews     |
+
+**Backwards compatibility:** Existing configs using `model=` and `reasoning_effort=` (without prefix) continue to work and map to `codex_model` and `codex_reasoning_effort` respectively.
 
 ## Updating
 
@@ -81,7 +89,7 @@ pre-flight registers a `PreToolUse:ExitPlanMode` hook. This fires every time Cla
 
 The hook uses a two-pass approach:
 
-1. **First call** — extracts the plan from the transcript, sends it to Codex, and **denies** `ExitPlanMode`. The denial reason contains the Codex review, which Claude surfaces to the user in conversation.
+1. **First call** — extracts the plan from the transcript, sends it to the configured provider (Codex or Gemini), and **denies** `ExitPlanMode`. The denial reason contains the review, which Claude surfaces to the user in conversation.
 2. **Second call** — Claude retries `ExitPlanMode` after incorporating the feedback. The hook detects the plan was already reviewed and **passes through**, allowing the tool to execute normally.
 
 ### Content hashing & loop prevention
@@ -89,8 +97,12 @@ The hook uses a two-pass approach:
 A SHA-256 hash of the plan content is written to a marker file in `/tmp` (`pre-flight-<session-hash>.marker`). On each invocation the hook compares the current plan hash to the stored one:
 
 - **Same hash** → plan unchanged, pass through (second call after deny)
-- **Different hash** → plan was revised, trigger a fresh Codex review
+- **Different hash** → plan was revised, trigger a fresh review
 - Marker files older than 24 hours are automatically cleaned up
+
+### Provider abstraction
+
+The review logic is split into provider-specific functions (`review_with_codex`, `review_with_gemini`) behind a shared prompt builder. A `case` statement routes to the configured provider. Adding a new provider requires only a new function and case branch — everything else (plan extraction, hashing, deny/retry flow) is shared.
 
 ### Transcript parsing
 
