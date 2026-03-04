@@ -177,6 +177,19 @@ if [ -f "$marker_file" ]; then
 fi
 
 # ---------------------------------------------------------------------------
+# Preflight dependency check
+# ---------------------------------------------------------------------------
+if ! command -v "$provider" >/dev/null 2>&1; then
+  case "$provider" in
+    codex)  install_url="https://github.com/openai/codex" ;;
+    gemini) install_url="https://github.com/google-gemini/gemini-cli" ;;
+    *)      install_url="" ;;
+  esac
+  log "error: '$provider' not found in PATH. Install it: $install_url"
+  exit 0
+fi
+
+# ---------------------------------------------------------------------------
 # Provider routing
 # ---------------------------------------------------------------------------
 log "plan extracted (${#plan_content} chars), sending to $provider..."
